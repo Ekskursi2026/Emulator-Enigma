@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emulator Sandi Enigma</title>
+    
+    <!-- ============================================================================================== -->
+    <!-- BAGIAN CSS (STYLING ISEKAI STYLE WITH GLOW EFFECTS - PORTRAIT 3:4 OPTIMIZED)                    -->
+    <!-- ============================================================================================== -->
+    <style>
+        :root {
+            --primary: #00e5ff; 
+            --primary-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+            --primary-hover-gradient: linear-gradient(135deg, #33d1ff, #1a82ff);
+            
+            --status-icon-color: #00e5ff;
+            --status-icon-glow: rgba(0, 229, 255, 0.8);
+
+            --bg-body: #050814; 
+            --bg-card-gradient: linear-gradient(150deg, rgba(12, 20, 39, 0.82), rgba(6, 11, 24, 0.85));
+            --bg-tab-container: rgba(0, 229, 255, 0.05);
+            --input-panel-bg: rgba(0, 229, 255, 0.04);
+            --rotor-grid-bg: rgba(15, 23, 42, 0.6);
+            --code-bg: rgba(4, 9, 20, 0.9); 
+            
+            --text-main: #f0f8ff; 
+            --text-muted: #8a9bb8; 
+            --border-color: rgba(0, 229, 255, 0.35); 
+            
+            --bg-result-gradient: linear-gradient(145deg, rgba(4, 47, 38, 0.85), rgba(2, 28, 22, 0.9)); 
+            --border-result: #10b981; 
+            --text-result: #34d399; 
+
+            --corner-size: 24px; 
+            --corner-offset: -12px;
+            
+            --gold-bg: linear-gradient(
+                to top,
+                rgb(140, 90, 20) 0%,
+                rgb(190, 130, 40) 35%,
+                rgb(235, 175, 60) 70%,
+                rgb(255, 195, 85) 100%
+            );
+
+            --gold-border: rgba(255, 195, 85, 0.95);
+
+            --gold-shadow:
+                0 0 10px rgba(0, 229, 255, 0.5),
+                0 0 6px rgba(255, 195, 85, 0.6);
+            
+            --footer-bg: linear-gradient(145deg, rgba(10, 22, 46, 0.92), rgba(4, 8, 18, 0.96));
+            --grid-line: rgba(0, 229, 255, 0.06);
+            --bg-img-url: none;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 20% 15%, rgba(0, 229, 255, 0.12), transparent 45%),
+                radial-gradient(circle at 80% 85%, rgba(0, 114, 255, 0.1), transparent 45%),
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+            background-attachment: fixed;
+            
+            color: var(--text-main);
+            padding: 2rem 1rem 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.bg-image-loaded {
+            background-image: linear-gradient(rgba(5, 8, 20, 0.55), rgba(5, 8, 20, 0.75)), var(--bg-img-url);
+            background-size: cover;
+            background-position: center 50%;
+            background-repeat: no-repeat;
+            background-attachment: fixed; 
+            will-change: background-position;
+        }
+
+        /* LOADING PANEL */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 8, 20, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+            padding: 1rem;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loading-content { max-width: 550px; width: 100%; text-align: center; margin-bottom: 0; animation: loadingGlowPulse 2.5s infinite ease-in-out; }
+
+        @keyframes loadingGlowPulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.35), 0 0 50px rgba(0, 229, 255, 0.15), 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 229, 255, 0.65), 0 0 80px rgba(0, 229, 255, 0.3), 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 229, 255, 0.2); border-color: rgba(0, 229, 255, 0.85); }
+        }
+
+        .loading-header h2 { font-size: 1.25rem; color: var(--text-main); text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); margin-top: 1rem; margin-bottom: 0.5rem; letter-spacing: 0.5px; }
+        .loading-status { font-size: 0.85rem; color: var(--text-muted); font-family: 'Courier New', Courier, monospace; margin-bottom: 1.25rem; text-shadow: 0 0 8px rgba(0, 229, 255, 0.3); }
+
+        .spinner {
+            width: 48px; height: 48px;
+            border: 3px solid rgba(0, 229, 255, 0.15);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%; margin: 0 auto;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.7), inset 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .tips-box { background: var(--input-panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; text-align: left; }
+        .tips-title { font-size: 0.9rem; font-weight: 700; color: #facc15; margin-bottom: 0.5rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .tips-box p { font-size: 0.9rem; color: var(--text-main); line-height: 1.5; }
+
+        /* MAIN CONTAINER */
+        .calculator-container {
+            background: var(--bg-card-gradient); max-width: 800px; width: 100%; padding: 2.5rem;
+            border-radius: 16px; border: 1px solid rgba(0, 229, 255, 0.45);
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 50px rgba(0, 229, 255, 0.15), 0 20px 40px -10px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 229, 255, 0.08);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            margin-bottom: 3rem; position: relative; transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header { text-align: center; margin: 0 auto; padding: 1.25rem 1rem; border-top: 1px dashed var(--border-color); border-bottom: 1px dashed var(--border-color); background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.05), transparent); }
+        .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main); text-shadow: 0 0 12px rgba(0, 229, 255, 0.5); }
+        .header p { color: var(--text-muted); font-size: 0.98rem; line-height: 1.5; margin: 0 auto; max-width: 90%; }
+
+        /* INPUT PANEL */
+        .input-panel {
+            background: var(--input-panel-bg); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 1.75rem; margin: 1.5rem 0; display: flex; flex-direction: column; gap: 1.5rem;
+            box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.03);
+        }
+
+        .rotor-section { display: flex; flex-direction: column; gap: 0.6rem; }
+        .rotor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; background: var(--rotor-grid-bg); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
+        
+        label { font-size: 1.05rem; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px; display: block; }
+        .label-rotor-sub { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.3px; }
+
+        /* STYLING TEKS ERROR VALIDASI */
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none;
+            margin-top: 0.3rem;
+            text-shadow: 0 0 8px rgba(255, 77, 77, 0.5);
+        }
+
+        /* Otomatis Uppercase via CSS Styling */
+        input[type="text"], textarea { 
+            padding: 0.85rem 1rem; 
+            background: var(--code-bg); 
+            color: var(--text-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            font-size: 1.05rem; 
+            outline: none; 
+            transition: all 0.3s ease; 
+            width: 100%; 
+            text-transform: uppercase;
+        }
+        .rotor-input { text-align: center; font-weight: bold; font-size: 1.2rem; letter-spacing: 1px; }
+        textarea { resize: vertical; min-height: 130px; font-family: 'Courier New', Courier, monospace; font-size: 1.15rem; letter-spacing: 1px; line-height: 1.45; }
+        
+        ::placeholder { color: var(--text-muted); opacity: 0.6; font-weight: normal; font-family: sans-serif; text-transform: none; }
+        input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        .helper-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.4; }
+
+        /* BUTTONS */
+        .actions { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        .btn { padding: 0.85rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; border: none; transition: all 0.2s ease; letter-spacing: 0.5px; }
+        .btn-primary { background: var(--primary-gradient); color: #ffffff; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.35); }
+        .btn-primary:hover { background: var(--primary-hover-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); }
+        .btn-primary:active { transform: translateY(1px) scale(0.98); }
+        .btn-secondary { background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: rgba(0, 229, 255, 0.15); border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 0 12px rgba(0, 229, 255, 0.25); }
+        .btn-secondary:active { transform: translateY(0) scale(0.98); }
+
+        /* RESULTS (HIDDEN BY DEFAULT WITH ANIMATIONS) */
+        .results-container {
+            background: var(--bg-result-gradient); border: 1px solid var(--border-result); border-radius: 12px;
+            padding: 1.5rem; margin-bottom: 0; display: none; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* HEADER HASIL & TOMBOL COPY */
+        .results-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .results-container h3 { 
+            font-size: 1.15rem; 
+            margin: 0; 
+            color: var(--text-result); 
+            letter-spacing: 0.5px; 
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.4); 
+        }
+
+        .copy-btn {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--border-result);
+            color: var(--text-result);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .result-card { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-result); border-radius: 8px; padding: 1.2rem; min-height: 85px; display: flex; align-items: center; position: relative;}
+        .result-value { font-size: 1.3rem; font-weight: 700; color: var(--text-result); font-family: 'Courier New', Courier, monospace; word-wrap: break-word; letter-spacing: 1px; white-space: pre-wrap; width: 100%; }
+
+        .results-container.active { display: block; margin-bottom: 1.5rem; animation: resultContainerIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: top center; }
+        .results-container.active h3 { animation: resultTitleIn 0.4s ease-out 0.08s both; }
+        .results-container.active .copy-btn { animation: resultTitleIn 0.4s ease-out 0.08s both; }
+        .results-container.active .result-card { animation: resultCardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.10s;}
+        
+        @keyframes resultContainerIn { from { opacity: 0; transform: translateY(22px) scale(0.97); filter: blur(3px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+        @keyframes resultTitleIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes resultCardIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        .results-container.resetting { display: block; animation: resultResetOut 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; overflow: hidden; }
+        .results-container.resetting .result-card { animation: resultCardResetOut 0.26s ease-in forwards; }
+        
+        @keyframes resultResetOut { 0% { opacity: 1; transform: translateY(0) scale(1); max-height: 500px; margin-bottom: 1.5rem; } 100% { opacity: 0; transform: translateY(-16px) scale(0.985); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; border: 0;} }
+        @keyframes resultCardResetOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-8px); } }
+
+        /* COLLAPSIBLE INFO */
+        .formula-wrapper { width: 100%; margin: 0 auto; text-align: center; }
+        .formula-toggle-btn { display: inline-block; cursor: pointer; color: var(--text-muted); font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; font-weight: 600; letter-spacing: 1px; padding: 8px 16px; transition: all 0.3s ease; }
+        .formula-toggle-btn:hover { color: var(--primary); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
+        .formula-content { display: none; padding: 1.25rem; border-radius: 10px; background: var(--input-panel-bg); border: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-muted); text-align: left; margin-top: 1rem; animation: fadeIn 0.4s ease-out both; }
+        .formula-content.show { display: block; }
+        .formula-row { margin-bottom: 0.5rem; line-height: 1.5; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* DECORATIONS */
+        .corner-diamond { position: absolute; width: var(--corner-size); height: var(--corner-size); background: var(--gold-bg); border: 1.5px solid var(--gold-border); box-shadow: var(--gold-shadow); backdrop-filter: blur(4px); transform: rotate(45deg); z-index: 10; }
+        .c-tl { top: var(--corner-offset); left: var(--corner-offset); }
+        .c-tr { top: var(--corner-offset); right: var(--corner-offset); }
+        .c-bl { bottom: var(--corner-offset); left: var(--corner-offset); }
+        .c-br { bottom: var(--corner-offset); right: var(--corner-offset); }
+        .status-top-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin: -10px auto 15px auto; }
+        .status-top-circle { width: 6px; height: 6px; background: var(--status-icon-color); border-radius: 50%; box-shadow: 0 0 8px var(--status-icon-glow); transition: all 0.3s ease; }
+        .status-top-icon { width: 12px; height: 12px; background: var(--status-icon-color); transform: rotate(45deg); box-shadow: 0 0 8px var(--status-icon-glow); transition: all 0.3s ease; }
+        .status-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent); margin: 1.5rem 0; border: none; }
+
+        /* QUOTES */
+        .quote-container { margin: 10px auto; padding: 1.25rem; text-align: center; max-width: 90%; border-top: 1px dashed var(--border-color); border-bottom: 1px dashed var(--border-color); background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.03), transparent); }
+        .quote-text, .quote-author { transition: opacity 0.5s ease; }
+        .quote-text { font-size: 1.2rem; font-style: italic; color: var(--text-main); line-height: 1.5; }
+        .quote-author { display: block; margin-top: 8px; font-size: 0.85rem; font-weight: bold; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 8px rgba(0, 229, 255, 0.3); }
+
+        /* FOOTER */
+        .app-footer { background: var(--footer-bg); width: 100%; max-width: 800px; border-radius: 16px 16px 0 0; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1.5rem; margin-top: auto; border: 1px solid rgba(0, 229, 255, 0.45); border-bottom: none; box-shadow: 0 -5px 25px rgba(0, 229, 255, 0.3), 0 -10px 40px rgba(0, 229, 255, 0.12), 0 -4px 20px rgba(0, 0, 0, 0.6); position: relative; backdrop-filter: blur(12px); transition: box-shadow 0.3s ease, border-color 0.3s ease; }
+        .app-footer:hover { border-color: rgba(0, 229, 255, 0.65); box-shadow: 0 -8px 30px rgba(0, 229, 255, 0.4), 0 -12px 45px rgba(0, 229, 255, 0.18), 0 -4px 20px rgba(0, 0, 0, 0.6); }
+        .footer-logo { width: 110px; height: 110px; border-radius: 12px; object-fit: contain; flex-shrink: 0; }
+        .footer-content { display: flex; flex-direction: column; color: #ffffff; flex: 1; }
+        .f-line-1 { font-size: 0.9rem; margin-bottom: 0.2rem; opacity: 0.95; color: #93c5fd; }
+        .f-line-2 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.25rem; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+        .f-line-3 { font-size: 0.85rem; margin-bottom: 0.4rem; opacity: 0.85; }
+        .f-line-4 { font-size: 0.75rem; font-weight: 600; color: #cbd5e1; }
+        .f-line-4 a { color: var(--primary); text-decoration: none; transition: all 0.2s ease; }
+        .f-line-4 a:hover { color: #ffffff; text-decoration: underline; text-shadow: 0 0 8px var(--primary); }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .calculator-container { padding: 1.75rem 1.25rem; }
+            .rotor-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; }
+            .app-footer { flex-direction: column; text-align: center; padding: 1.25rem; gap: 1rem; }
+            .footer-logo { width: 90px; height: 90px; }
+            .f-line-2 { font-size: 1.1rem; }
+            .header h1 { font-size: 1.5rem; }
+            .modal-tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOADING PANEL -->
+<div id="loading-panel" class="loading-overlay">
+    <div class="calculator-container loading-content">
+        <div class="corner-diamond c-tl"></div>
+        <div class="corner-diamond c-tr"></div>
+        <div class="corner-diamond c-bl"></div>
+        <div class="corner-diamond c-br"></div>
+
+        <div class="status-top-container">
+            <div class="status-top-circle"></div>
+            <div class="status-top-icon"></div>
+            <div class="status-top-circle"></div>
+        </div>
+
+        <div class="loading-header">
+            <div class="spinner"></div>
+            <h2>EMULATOR SANDI ENIGMA</h2>
+            <div class="loading-status">Memeriksa & memuat aset sistem...</div>
+        </div>
+
+        <div class="status-divider"></div>
+
+        <div class="tips-box">
+            <div class="tips-title">💡 TIPS PENGGUNAAN EMULATOR</div>
+            <p><br></br>🔣Masukkan input Rotor dan Plugboard dengan benar sebelum memasukkan pesan. <br></br> 👆 Klik <code>ENKRIPSI / DEKRIPSI</code> untuk mendapatkan hasil dan pesan menarik untukmu!</p>
+        </div>
+
+        <div class="status-divider"></div>
+
+        <div class="status-top-container" style="margin: 15px auto 0 auto;">
+            <div class="status-top-circle"></div>
+            <div class="status-top-icon"></div>
+            <div class="status-top-circle"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN EMULATOR CONTAINER -->
+<div class="calculator-container">
+    <div class="corner-diamond c-tl"></div>
+    <div class="corner-diamond c-tr"></div>
+    <div class="corner-diamond c-bl"></div>
+    <div class="corner-diamond c-br"></div>
+
+    <div class="status-top-container">
+        <div class="status-top-circle"></div>
+        <div class="status-top-icon"></div>
+        <div class="status-top-circle"></div>
+    </div>
+
+    <div class="status-divider"></div>
+
+    <div class="header">
+        <h1>Emulator Sandi Enigma</h1>
+        <p>Emulator ini dibuat untuk membantu GEL Muda melakukan enkripsi & dekripsi pesan dalam penugasan JOSJIS Ekskursi GEL 2026</p>
+    </div>
+
+    <div class="status-divider"></div>
+
+    <!-- Area Input Utama -->
+    <div class="input-panel">
+        <div class="rotor-section">
+            <label>Pengaturan Rotor</label>
+            <div class="rotor-grid">
+                <div class="form-group">
+                    <label class="label-rotor-sub">Rotor Kiri</label>
+                    <input type="text" id="pos-left" class="rotor-input" maxlength="1" autocomplete="off" placeholder="A-Z, 0-9">
+                </div>
+                <div class="form-group">
+                    <label class="label-rotor-sub">Rotor Tengah</label>
+                    <input type="text" id="pos-middle" class="rotor-input" maxlength="1" autocomplete="off" placeholder="A-Z, 0-9">
+                </div>
+                <div class="form-group">
+                    <label class="label-rotor-sub">Rotor Kanan</label>
+                    <input type="text" id="pos-right" class="rotor-input" maxlength="1" autocomplete="off" placeholder="A-Z, 0-9">
+                </div>
+            </div>
+            <!-- Element Pesan Error Rotor -->
+            <div id="rotor-error" class="error-msg">⚠️ Harap isi ketiga posisi rotor terlebih dahulu!</div>
+        </div>
+
+        <div class="form-group">
+            <label for="plugboard">Plugboard Pairs</label>
+            <input type="text" id="plugboard" placeholder="contoh: 1K 4N BU NT AL" autocomplete="off">
+            <div class="helper-text">Tambahkan spasi tiap dua (2) karakter</div>
+        </div>
+
+        <div class="form-group">
+            <label for="input-text">Input Pesan</label>
+            <textarea id="input-text" placeholder="Ketik pesan atau angka di sini.....φ(▪~▪`)"></textarea>
+            <!-- Element Pesan Error Input Kosong -->
+            <div id="input-error" class="error-msg">⚠️ Harap masukkan pesan yang akan diproses!</div>
+            <div class="helper-text">Huruf (A-Z) dan Angka (0-9) akan diproses. Spasi dan simbol (!?+-., dsb) dibiarkan seperti aslinya.</div>
+        </div>
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="actions">
+        <button class="btn btn-primary" onclick="calculateEnigma()">Dekripsi / Enkripsi</button>
+        <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+    </div>
+
+    <!-- Output Result (Animasi) -->
+    <div class="results-container" id="results-box">
+        <div class="results-header-row">
+            <h3>Output Sandbox</h3>
+            <button class="copy-btn" id="copy-btn" onclick="copyResult()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="copy-text">Copy</span>
+            </button>
+        </div>
+        <div class="result-card">
+            <div id="output-text" class="result-value"></div>
+        </div>
+    </div>
+
+    <div class="status-divider"></div>
+
+    <!-- INFO COLLAPSIBLE -->
+    <div class="formula-wrapper">
+        <div class="formula-toggle-btn" id="formula-toggle" onclick="toggleFormula()">
+            [+] Tampilkan Cara Kerja
+        </div>
+        <div class="formula-content" id="formula-content">
+            <div class="formula-row"><strong>Rotor:</strong> Mesin enigma menggunakan 3 rotor berputar yang mengubah huruf setiap kali diketik. Atur posisi awal rotor (A-Z atau 0-9) sesuai instruksi tugasmu.</div>
+            <br>
+            <div class="formula-row"><strong>Plugboard:</strong> Menukar pasangan huruf secara statis sebelum dan sesudah masuk ke dalam rotor. Contoh: `1K` akan mengubah `1` menjadi `K` dan sebaliknya.</div>
+        </div>
+    </div>
+
+    <div class="status-divider"></div>
+
+    <!-- Quote System -->
+    <div class="quote-container">
+        <div class="quote-text" id="sys-quote">"Loading system message..."</div>
+        <div class="quote-author" id="sys-author"></div>
+    </div>
+
+    <div class="status-divider"></div>
+
+    <div class="status-top-container" style="margin: 15px auto 0 auto;">
+        <div class="status-top-circle"></div>
+        <div class="status-top-icon"></div>
+        <div class="status-top-circle"></div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="app-footer">
+    <div class="corner-diamond c-tl"></div>
+    <div class="corner-diamond c-tr"></div>
+
+    <img src="https://github.com/user-attachments/assets/dea91dc6-a441-4474-8b44-112fad9c0db6" alt="Logo Ekskursi" class="footer-logo" onerror="this.style.display='none'">
+    
+    <div class="footer-content">
+        <div class="f-line-1">Jogja Objectively: Spatial Journey for Inspiring Story - JOSJIS</div>
+        <div class="f-line-2">EKSKURSI GEOGRAFI LINGKUNGAN 2026</div>
+        <div class="f-line-3">LARASKALA: Laraskan Asa, Rangkai Karsa, Bersama Arungi Semesta</div>
+        <div class="f-line-4">🪨 Concept and Design by PIC Penugasan, Member of <a href="https://www.instagram.com/materipusyink" target="_blank">Divisi Materi Ekskursi 2026</a></div>
+    </div>
+
+    <img src="https://github.com/user-attachments/assets/366bf32e-b3b2-4560-9fa4-6e4739283d6f" alt="Terravix" class="footer-logo" onerror="this.style.display='none'">
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+    // 1. SISTEM EFEK PARALLAX & LOADING PANEL
+    let isTicking = false;
+
+    function updateParallax() {
+        if (!document.body.classList.contains('bg-image-loaded')) { isTicking = false; return; }
+        const scrolled = window.pageYOffset || document.documentElement.scrollTop;
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const scrollFraction = Math.min(1, Math.max(0, scrolled / maxScroll));
+        const yPercent = 10 + (scrollFraction * 80);
+        document.body.style.backgroundPosition = `center ${yPercent.toFixed(2)}%`;
+        isTicking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!isTicking) { window.requestAnimationFrame(updateParallax); isTicking = true; }
+    }, { passive: true });
+
+    function initBackgroundAndLoading() {
+        const bgImageUrl = 'https://github.com/user-attachments/assets/3440a59c-dd50-40ed-aaf3-7b132d26544a';
+        const startTime = Date.now();
+        const minDisplayDuration = 3000;
+        const bgImg = new Image();
+
+        const closeLoadingAndApplyBg = (isSuccess) => {
+            const elapsedTime = Date.now() - startTime;
+            const remainingDelay = Math.max(0, minDisplayDuration - elapsedTime);
+            setTimeout(() => {
+                if (isSuccess) {
+                    document.body.style.setProperty('--bg-img-url', `url('${bgImageUrl}')`);
+                    document.body.classList.add('bg-image-loaded');
+                    updateParallax();
+                }
+                const loadingPanel = document.getElementById('loading-panel');
+                if (loadingPanel) loadingPanel.classList.add('hidden');
+            }, remainingDelay);
+        };
+
+        bgImg.onload = () => closeLoadingAndApplyBg(true);
+        bgImg.onerror = () => closeLoadingAndApplyBg(false);
+        bgImg.src = bgImageUrl;
+    }
+
+    // 2. SISTEM TOGGLE FORMULA & EASTER EGG
+    function toggleFormula() {
+        const content = document.getElementById('formula-content');
+        const btn = document.getElementById('formula-toggle');
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            btn.innerText = "[+] Tampilkan Cara Kerja";
+        } else {
+            content.classList.add('show');
+            btn.innerText = "[-] Sembunyikan Cara Kerja";
+        }
+        setTimeout(() => window.requestAnimationFrame(updateParallax), 50);
+    }
+
+    function switchModalTab(panelIndex) {
+        for (let i = 1; i <= 3; i++) {
+            const btn = document.getElementById(`modal-tab-${i}`);
+            const panel = document.getElementById(`modal-panel-${i}`);
+            if (btn && panel) {
+                if (i === panelIndex) {
+                    btn.classList.add('active'); panel.classList.add('active');
+                } else {
+                    btn.classList.remove('active'); panel.classList.remove('active');
+                }
+            }
+        }
+    }
+
+    // 3. QUOTE SYSTEM
+    const quotes = [
+        { text: "I wanna love you like the hurricane, I wanna love you like mountain range.", author: "Rahasia Hati - Nidji" },
+        { text: "Save the environment? Bro, save your semester first.", author: "Just Kidding" },
+        { text: "Alah bisa karena biasa.", author: "Peribahasa" },
+        { text: "Saat semua tak jelas arahnya, Kita hanya punya bersama.", author: "Ramai Sepi Bersama - Hindia" },
+        { text: "Jangan lupa daftar Ekspedisi EGSA!", author: "Ekspedisi EGSA 2027" },
+        { text: "Bumi adalah museum kehidupan kita.", author: "Prof. Dr. Suratman Worosuprodjo" }
+    ];
+
+    let currentQuoteIndex = Math.floor(Math.random() * quotes.length);
+    let quoteInterval;
+
+    function displayNextQuote() {
+        const quoteEl = document.getElementById('sys-quote');
+        const authorEl = document.getElementById('sys-author');
+        if(!quoteEl || !authorEl) return;
+        
+        quoteEl.style.opacity = 0;
+        authorEl.style.opacity = 0;
+
+        setTimeout(() => {
+            const selected = quotes[currentQuoteIndex];
+            quoteEl.innerText = `"${selected.text}"`;
+            authorEl.innerText = selected.author;
+            quoteEl.style.opacity = 1;
+            authorEl.style.opacity = 1;
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        }, 500);
+    }
+
+    function triggerNextQuote() {
+        displayNextQuote();
+        clearInterval(quoteInterval);
+        quoteInterval = setInterval(displayNextQuote, 7500);
+    }
+
+    // 4. ENIGMA ENGINE LOGIC
+    const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const ALPH_LEN = ALPHABET.length;
+
+    function createShuffledWiring(seed) {
+        let arr = ALPHABET.split(''); let s = seed;
+        for (let i = arr.length - 1; i > 0; i--) {
+            s = (s * 9301 + 49297) % 233280;
+            let j = Math.floor((s / 233280) * (i + 1));
+            let temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+        return arr.join('');
+    }
+
+    const ROTOR_WIRINGS = {
+        'I':   createShuffledWiring(12345),
+        'II':  createShuffledWiring(67890),
+        'III': createShuffledWiring(54321)
+    };
+
+    class Plugboard {
+        constructor(pairsString) {
+            this.mapping = {};
+            for (let c of ALPHABET) this.mapping[c] = c;
+            if (pairsString) {
+                const pairs = pairsString.toUpperCase().trim().split(/\s+/);
+                for (let pair of pairs) {
+                    if (pair.length === 2) {
+                        const [p1, p2] = pair.split('');
+                        if (ALPHABET.includes(p1) && ALPHABET.includes(p2)) {
+                            this.mapping[p1] = p2; this.mapping[p2] = p1;
+                        }
+                    }
+                }
+            }
+        }
+        process(char) { return this.mapping[char] || char; }
+    }
+
+    class Rotor {
+        constructor(wiring, position) {
+            this.wiring = wiring;
+            this.position = ALPHABET.indexOf(position);
+            if(this.position === -1) this.position = 0; 
+        }
+        forward(charIdx) {
+            const shiftIn = (charIdx + this.position) % ALPH_LEN;
+            const wiredChar = this.wiring[shiftIn];
+            return (ALPHABET.indexOf(wiredChar) - this.position + ALPH_LEN) % ALPH_LEN;
+        }
+        backward(charIdx) {
+            const shiftIn = (charIdx + this.position) % ALPH_LEN;
+            const char = ALPHABET[shiftIn];
+            const wiredIdx = this.wiring.indexOf(char);
+            return (wiredIdx - this.position + ALPH_LEN) % ALPH_LEN;
+        }
+    }
+
+    function reflect(charIdx) { return ALPH_LEN - 1 - charIdx; }
+
+    function processEnigma(text) {
+        const posL = document.getElementById('pos-left').value;
+        const posM = document.getElementById('pos-middle').value;
+        const posR = document.getElementById('pos-right').value;
+        
+        const leftRotor = new Rotor(ROTOR_WIRINGS['I'], posL);
+        const middleRotor = new Rotor(ROTOR_WIRINGS['II'], posM);
+        const rightRotor = new Rotor(ROTOR_WIRINGS['III'], posR);
+        const plugStr = document.getElementById('plugboard').value;
+        const plugboard = new Plugboard(plugStr);
+
+        let result = "";
+        for (let char of text) {
+            if (!ALPHABET.includes(char)) { result += char; continue; }
+
+            rightRotor.position = (rightRotor.position + 1) % ALPH_LEN;
+            if (rightRotor.position === 0) {
+                middleRotor.position = (middleRotor.position + 1) % ALPH_LEN;
+                if (middleRotor.position === 0) leftRotor.position = (leftRotor.position + 1) % ALPH_LEN;
+            }
+
+            let c = plugboard.process(char);
+            let idx = ALPHABET.indexOf(c);
+
+            idx = rightRotor.forward(idx);
+            idx = middleRotor.forward(idx);
+            idx = leftRotor.forward(idx);
+            idx = reflect(idx);
+            idx = leftRotor.backward(idx);
+            idx = middleRotor.backward(idx);
+            idx = rightRotor.backward(idx);
+
+            let finalChar = ALPHABET[idx];
+            result += plugboard.process(finalChar);
+        }
+        return result;
+    }
+
+    // 5. EVENT LISTENERS & ACTION BUTTONS
+    function replayResultAnimation() {
+        const results = document.getElementById('results-box');
+        
+        const copyText = document.getElementById('copy-text');
+        if (copyText) copyText.innerText = "Copy";
+        
+        results.classList.remove('active', 'resetting');
+        results.style.display = 'block';
+        void results.offsetWidth; 
+        results.classList.add('active');
+    }
+
+    function calculateEnigma() {
+        // Eksekusi quote & easter egg di awal aksi klik (selalu berjalan terlepas dari validasi)
+        triggerNextQuote();
+
+        const posL = document.getElementById('pos-left').value.trim();
+        const posM = document.getElementById('pos-middle').value.trim();
+        const posR = document.getElementById('pos-right').value.trim();
+        const inputTextVal = document.getElementById('input-text').value.trim();
+
+        const rotorErrorEl = document.getElementById('rotor-error');
+        const inputErrorEl = document.getElementById('input-error');
+        const resultsBox = document.getElementById('results-box');
+
+        let isValid = true;
+
+        // Validasi Posisi Rotor
+        if (!posL || !posM || !posR) {
+            if (rotorErrorEl) rotorErrorEl.style.display = 'block';
+            isValid = false;
+        } else {
+            if (rotorErrorEl) rotorErrorEl.style.display = 'none';
+        }
+
+        // Validasi Input Pesan Kosong
+        if (!inputTextVal) {
+            if (inputErrorEl) inputErrorEl.style.display = 'block';
+            isValid = false;
+        } else {
+            if (inputErrorEl) inputErrorEl.style.display = 'none';
+        }
+
+        // Jika salah satu validasi gagal, hentikan pemrosesan Enigma & sembunyikan kotak hasil
+        if (!isValid) {
+            resultsBox.classList.remove('active', 'resetting');
+            resultsBox.style.display = 'none';
+            return;
+        }
+
+        // Normalisasi Input Teks
+        const inputEl = document.getElementById('input-text');
+        inputEl.value = inputEl.value.toUpperCase();
+        
+        // Proses Sandi
+        const processedText = processEnigma(inputEl.value);
+        document.getElementById('output-text').innerText = processedText;
+        
+        // Tampilkan Hasil dengan Animasi
+        replayResultAnimation();
+        setTimeout(() => window.requestAnimationFrame(updateParallax), 550);
+    }
+    
+    // Fungsi Copy to Clipboard
+    function copyResult() {
+        const outputText = document.getElementById('output-text').innerText;
+        const copySpan = document.getElementById('copy-text');
+        
+        if (outputText) {
+            navigator.clipboard.writeText(outputText).then(() => {
+                copySpan.innerText = "Tersalin!";
+                setTimeout(() => {
+                    copySpan.innerText = "Copy";
+                }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+                copySpan.innerText = "Gagal";
+            });
+        }
+    }
+
+    function resetForm() {
+        // Mengosongkan nilai Rotor dan Textarea saat Reset
+        document.getElementById('pos-left').value = '';
+        document.getElementById('pos-middle').value = '';
+        document.getElementById('pos-right').value = '';
+        document.getElementById('plugboard').value = '';
+        document.getElementById('input-text').value = '';
+
+        const rotorErrorEl = document.getElementById('rotor-error');
+        if (rotorErrorEl) rotorErrorEl.style.display = 'none';
+
+        const inputErrorEl = document.getElementById('input-error');
+        if (inputErrorEl) inputErrorEl.style.display = 'none';
+
+        const results = document.getElementById('results-box');
+        if (results.classList.contains('active')) {
+            results.classList.remove('active');
+            results.classList.add('resetting');
+            setTimeout(() => {
+                results.classList.remove('resetting');
+                results.style.removeProperty('display');
+                window.requestAnimationFrame(updateParallax);
+            }, 460);
+        } else {
+            results.style.removeProperty('display');
+            window.requestAnimationFrame(updateParallax);
+        }
+        triggerNextQuote();
+    }
+
+    // Input Sanitization & Auto Uppercase Listener
+    const rotorIds = ['pos-left', 'pos-middle', 'pos-right'];
+    rotorIds.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', (e) => { 
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); 
+            const posL = document.getElementById('pos-left').value.trim();
+            const posM = document.getElementById('pos-middle').value.trim();
+            const posR = document.getElementById('pos-right').value.trim();
+            if (posL && posM && posR) {
+                const rotorErrorEl = document.getElementById('rotor-error');
+                if (rotorErrorEl) rotorErrorEl.style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('plugboard').addEventListener('input', (e) => {
+        let start = e.target.selectionStart; let oldVal = e.target.value; let newVal = oldVal.toUpperCase().replace(/[^A-Z0-9\s]/g, '');
+        if(oldVal !== newVal) {
+            e.target.value = newVal; let diff = oldVal.length - newVal.length;
+            e.target.setSelectionRange(start - diff, start - diff);
+        }
+    });
+
+    document.getElementById('input-text').addEventListener('input', (e) => {
+        let start = e.target.selectionStart;
+        let end = e.target.selectionEnd;
+        e.target.value = e.target.value.toUpperCase();
+        e.target.setSelectionRange(start, end);
+
+        if (e.target.value.trim() !== '') {
+            const inputErrorEl = document.getElementById('input-error');
+            if (inputErrorEl) inputErrorEl.style.display = 'none';
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initBackgroundAndLoading();
+        triggerNextQuote();
+    });
+</script>
+
+</body>
+</html>
