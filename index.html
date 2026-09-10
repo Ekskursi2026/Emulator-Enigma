@@ -311,6 +311,51 @@
             .header h1 { font-size: 1.5rem; }
             .modal-tabs { flex-direction: column; }
         }
+
+        /* ---------------------------------------------------------
+   BGM BUTTON STYLES
+   --------------------------------------------------------- */
+.bgm-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(5, 8, 20, 0.8);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
+}
+
+.bgm-button:hover {
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+.bgm-button.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
+
+@media (max-width: 600px) {
+    .bgm-button {
+        bottom: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -482,6 +527,15 @@
     <img src="https://github.com/user-attachments/assets/366bf32e-b3b2-4560-9fa4-6e4739283d6f" alt="Terravix" class="footer-logo" onerror="this.style.display='none'">
 </div>
 
+<audio id="bgm-video" loop autoplay muted>
+    <source src="Properties/Asset/bgm.MP3" type="audio/mpeg">
+    Browser Anda tidak mendukung elemen audio.
+</audio>
+
+<button id="mute-btn" onclick="toggleBGM()" class="bgm-button">
+    🔊 Aktifkan Musik
+</button>
+    
 <!-- JAVASCRIPT -->
 <script>
     // 1. SISTEM EFEK PARALLAX & LOADING PANEL
@@ -842,6 +896,27 @@
         initBackgroundAndLoading();
         triggerNextQuote();
     });
+
+    // ---------------------------------------------------------
+    // BGM VIDEO LOGIC
+    // ---------------------------------------------------------
+    function toggleBGM() {
+    const video = document.getElementById('bgm-video');
+    const btn = document.getElementById('mute-btn');
+    video.volume = 0.5;
+    if (video.muted) {
+        video.muted = false;
+        video.play(); // TAMBAHKAN BARIS INI: Memaksa audio untuk diputar
+        btn.innerHTML = '🔊 Musik Aktif';
+        btn.classList.add('active'); 
+    } else {
+        video.muted = true;
+        // Boleh ditambah video.pause() di sini jika ingin lagunya berhenti saat di-mute
+        btn.innerHTML = '🔇 Musik Tidak Aktif';
+        btn.classList.remove('active'); 
+    }
+}
+
 </script>
 
 </body>
