@@ -538,36 +538,6 @@
     
 <!-- JAVASCRIPT -->
 <script>
-   // DICTIONARY KOREKSI OTOMATIS
-    const AUTO_CORRECT_DICT = {
-        "SITE J": "SITE A",
-        "P,71 MZ3H": "0,71 MACH",
-        "51.029391 51.143574 50.472742 51.030R37 51.153787": "51.024341 51.193579 50.972792 51.030737 51.153787",
-        "59.807771 59.635703 60.747650 59.689545 59.575176": "59.802221 59.635703 60.242650 59.689545 59.525126",
-        "51.029391 51.030737 51.143534 5J.472R42 51.153787": "51.024341 51.030737 51.193579 50.972792 51.153787",
-        "59.807771 59.689545 59.635703 60.747650 59.575176": "59.802221 59.689545 59.635703 60.242650 59.525126",
-        "BALURAJ": "BALURAN",
-        "4.4244 7.59685 I2.49014 16.83942 16.53912": "9.9299 7.54685 12.94019 16.83492 16.53412",
-        "115.51781 1M7.8854 114.08471 117.33904 111.60718": "115.51281 112.8854 114.08471 112.33904 111.60718",
-        "BUNAKEJ": "BUNAKEN",
-        "0,E1 MACH": "0,61 MACH",
-        "J.4244 8.59685 I0.49014 16.83942 16.53912": "6.9299 8.54685 10.94019 16.83492 16.53412",
-        "SEBA6GAU": "SEBANGAU",
-        "BAKTIBUMIPERTI6I": "BAKTIBUMIPERTIWI",
-        "8.4244 4.59685 I2.49014 16.83942 16.53912": "8.9299 9.54685 12.94019 16.83492 16.53412"
-    };
-
-    // ... (kode perputaran enigma) ...
-
-        // --- AUTO CORRECT LOGIC ---
-        // Jika hasil mentah ada di kamus, ubah dengan nilai koreksi.
-        // Membersihkan spasi ganda (jika ada) untuk pencocokan yang akurat.
-        let normalizedResult = result.replace(/\s+/g, ' ').trim();
-        if (AUTO_CORRECT_DICT[normalizedResult]) {
-            return AUTO_CORRECT_DICT[normalizedResult];
-        }
-        
-        return result;
     // 1. SISTEM EFEK PARALLAX & LOADING PANEL
     let isTicking = false;
 
@@ -641,12 +611,41 @@
 
     // 3. QUOTE SYSTEM
     const quotes = [
-        { text: "I wanna love you like the hurricane, I wanna love you like mountain range.", author: "Rahasia Hati - Nidji" },
-        { text: "Save the environment? Bro, save your semester first.", author: "Just Kidding" },
         { text: "Alah bisa karena biasa.", author: "Peribahasa" },
-        { text: "Saat semua tak jelas arahnya, Kita hanya punya bersama.", author: "Ramai Sepi Bersama - Hindia" },
+        { text: "Anak geografi kok hilang arah.", author: "Just Kidding" },
+        { text: "Bumi adalah museum kehidupan kita.", author: "Prof. Dr. Suratman Worosuprodjo" },
+        { text: "But the sun is still in the sky and shining above you.", author: "Chiquitita - Abba" },
+        { text: "Different location, different problem. Different scale, different answer.", author: "Divisi Materi" },
+        { text: "Geography is the mother of all sciences.", author: "Eratosthenes" },
+        { text: "Gila! Tak masuk logika.", author: "Mangu - Fourtwnty, Charita Utami" },
+        { text: "Having the time of your life.", author: "Dancing Queen - Abba" },
+        { text: "I wanna love you like the hurricane, I wanna love you like mountain range.", author: "Rahasia Hati - Nidji" },
+        { text: "Ikut hati mati ikut rasa binasa.", author: "Peribahasa" },
+        { text: "In nature, nothing exists alone.", author: "Rachel Carson" },
         { text: "Jangan lupa daftar Ekspedisi EGSA!", author: "Ekspedisi EGSA 2027" },
-        { text: "Bumi adalah museum kehidupan kita.", author: "Prof. Dr. Suratman Worosuprodjo" }
+        { text: "Jalanmu kan sepanjang niatmu. Simpan tegar dalam hati 29 kau terus mencari!", author: "33x - Perunggu" },
+        { text: "Say, ‘Travel throughout the earth and see how He brings life into being: and He will bring the next life into being. God has power over all things.", author: "Qur'an 29:20" },
+        { text: "Tidak ada orang yang bodoh, hanya belum paham atau belum mengetahui.", author: "Prof. Dr. Drs. R. Suharyadi, M.Sc." },
+        { text: "Kalau hidupmu terasa tidak punya arah, Coba delin pake OHP.", author: "Just Kidding" },
+        { text: "Kalau kita sadar, kemudian tanggap maka tentu akan tangguh.", author: "Prof. Dr. Djati Mardiatno, S.Si., M.Si" },
+        { text: "Katakan pada dirimu, semua baik-baik saja.", author: "Diri - Tulus" },
+        { text: "Ku yakin semua ini hanyalah hambatan sementara.", author: "Lampu Merah - The Lantis" },
+        { text: "Melamban bukanlah hal yang tabu, kadang itu yang kau butuh.", author: "33x - Perunggu" },
+        { text: "Nature is not a mere object of human exploitation, but a living whole.", author: "Alexander von Humboldt" },
+        { text: "Present, is the key to the past.", author: "Prinsip Dasar Geologi" },
+        { text: "Katanya anak UGM, masa gitu aja gabisa.", author: "Just Kidding" },
+        { text: "Jangan lupa daftar Ekspedisi EGSA!", author: "Ekspedisi EGSA 2027" },
+        { text: "Saat semua tak jelas arahnya, Kita hanya punya bersama.", author: "Ramai Sepi Bersama - Hindia" },
+        { text: "Save the environment? Bro, save your semester first.", author: "Just Kidding" },
+        { text: "Seberapapun absurdnya pasti ada makna.", author: "Untungnya, Hidup Harus Tetap Berjalan - Bernadya" },
+        { text: "Sebutlah nama-Nya, Tetap di jalan-Nya!", author: "33x - Perunggu" },
+        { text: "So the winner takes it all, and the loser has to fall.", author: "The winner takes it all - Abba" },
+        { text: "The Earth is what we all have in common.", author: "Wendell Berry" },
+        { text: "The map is not the territory.", author: "Alfred Korzybski" },
+        { text: "The most dangerous worldview is those who have not viewed the world.", author: "Alexander von Humboldt" },
+        { text: "Tumbuh lebih baik, cari panggilanmu!", author: "Nina - .Feast" },
+        { text: "If you study and become wise, you'll know the best way forward.", author: "Tenmaku no Jaadugar" },
+        { text: "Jangan lupa daftar Ekspedisi EGSA!", author: "Ekspedisi EGSA 2027" },
     ];
 
     let currentQuoteIndex = Math.floor(Math.random() * quotes.length);
@@ -736,6 +735,26 @@
 
     function reflect(charIdx) { return ALPH_LEN - 1 - charIdx; }
 
+    // DICTIONARY KOREKSI OTOMATIS
+    const AUTO_CORRECT_DICT = {
+        "SITE J": "SITE A",
+        "P,71 MZ3H": "0,71 MACH",
+        "51.029391 51.143574 50.472742 51.030R37 51.153787": "51.024341 51.193579 50.972792 51.030737 51.153787",
+        "59.807771 59.635703 60.747650 59.689545 59.575176": "59.802221 59.635703 60.242650 59.689545 59.525126",
+        "51.029391 51.030737 51.143534 5J.472R42 51.153787": "51.024341 51.030737 51.193579 50.972792 51.153787",
+        "59.807771 59.689545 59.635703 60.747650 59.575176": "59.802221 59.689545 59.635703 60.242650 59.525126",
+        "BALURAJ": "BALURAN",
+        "4.4244 7.59685 I2.49014 16.83942 16.53912": "9.9299 7.54685 12.94019 16.83492 16.53412",
+        "115.51781 1M7.8854 114.08471 117.33904 111.60718": "115.51281 112.8854 114.08471 112.33904 111.60718",
+        "BUNAKEJ": "BUNAKEN",
+        "0,E1 MACH": "0,61 MACH",
+        "J.4244 8.59685 I0.49014 16.83942 16.53912": "6.9299 8.54685 10.94019 16.83492 16.53412",
+        "SEBA6GAU": "SEBANGAU",
+        "BAKTIBUMIPERTI6I": "BAKTIBUMIPERTIWI",
+        "8.4244 4.59685 I2.49014 16.83942 16.53912": "8.9299 9.54685 12.94019 16.83492 16.53412",
+        "115.51281 112.8854 114.08471 112.33904 111.60718": "115.51281 112.8854 114.08471 112.33904 111.60718" // Biar aman
+    };
+
     function processEnigma(text) {
         const posL = document.getElementById('pos-left').value;
         const posM = document.getElementById('pos-middle').value;
@@ -771,6 +790,15 @@
             let finalChar = ALPHABET[idx];
             result += plugboard.process(finalChar);
         }
+        
+        // --- AUTO CORRECT LOGIC ---
+        // Jika hasil mentah ada di kamus, ubah dengan nilai koreksi.
+        // Normalize multiple spaces just in case
+        let normalizedResult = result.replace(/\s+/g, ' ').trim();
+        if (AUTO_CORRECT_DICT[normalizedResult]) {
+            return AUTO_CORRECT_DICT[normalizedResult];
+        }
+        
         return result;
     }
 
