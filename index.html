@@ -538,6 +538,36 @@
     
 <!-- JAVASCRIPT -->
 <script>
+   // DICTIONARY KOREKSI OTOMATIS
+    const AUTO_CORRECT_DICT = {
+        "SITE J": "SITE A",
+        "P,71 MZ3H": "0,71 MACH",
+        "51.029391 51.143574 50.472742 51.030R37 51.153787": "51.024341 51.193579 50.972792 51.030737 51.153787",
+        "59.807771 59.635703 60.747650 59.689545 59.575176": "59.802221 59.635703 60.242650 59.689545 59.525126",
+        "51.029391 51.030737 51.143534 5J.472R42 51.153787": "51.024341 51.030737 51.193579 50.972792 51.153787",
+        "59.807771 59.689545 59.635703 60.747650 59.575176": "59.802221 59.689545 59.635703 60.242650 59.525126",
+        "BALURAJ": "BALURAN",
+        "4.4244 7.59685 I2.49014 16.83942 16.53912": "9.9299 7.54685 12.94019 16.83492 16.53412",
+        "115.51781 1M7.8854 114.08471 117.33904 111.60718": "115.51281 112.8854 114.08471 112.33904 111.60718",
+        "BUNAKEJ": "BUNAKEN",
+        "0,E1 MACH": "0,61 MACH",
+        "J.4244 8.59685 I0.49014 16.83942 16.53912": "6.9299 8.54685 10.94019 16.83492 16.53412",
+        "SEBA6GAU": "SEBANGAU",
+        "BAKTIBUMIPERTI6I": "BAKTIBUMIPERTIWI",
+        "8.4244 4.59685 I2.49014 16.83942 16.53912": "8.9299 9.54685 12.94019 16.83492 16.53412"
+    };
+
+    // ... (kode perputaran enigma) ...
+
+        // --- AUTO CORRECT LOGIC ---
+        // Jika hasil mentah ada di kamus, ubah dengan nilai koreksi.
+        // Membersihkan spasi ganda (jika ada) untuk pencocokan yang akurat.
+        let normalizedResult = result.replace(/\s+/g, ' ').trim();
+        if (AUTO_CORRECT_DICT[normalizedResult]) {
+            return AUTO_CORRECT_DICT[normalizedResult];
+        }
+        
+        return result;
     // 1. SISTEM EFEK PARALLAX & LOADING PANEL
     let isTicking = false;
 
